@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore Ordini Bistrot</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f7fa; color: #333; }
+        h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; font-size: 2em; }
+        h2 { color: #3498db; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; font-size: 1.5em; }
+        h3 { color: #2980b9; font-size: 1.2em; }
+        .section { margin-bottom: 40px; padding: 20px; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .item { display: flex; align-items: center; margin-bottom: 15px; padding: 10px; border-radius: 8px; transition: background 0.3s, transform 0.2s; }
+        .item:hover { background: #f9f9f9; transform: translateY(-2px); }
+        label { flex: 1; font-size: 1.1em; display: flex; align-items: center; cursor: pointer; }
+        input[type="number"] { width: 70px; padding: 8px; border: 1px solid #bdc3c7; border-radius: 6px; text-align: center; transition: border-color 0.3s; }
+        input[type="number"]:focus { border-color: #3498db; outline: none; }
+        select { padding: 8px; border: 1px solid #bdc3c7; border-radius: 6px; background: #fff; cursor: pointer; }
+        #total-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: linear-gradient(to right, #27ae60, #2ecc71); color: #fff; padding: 15px; font-size: 1.4em; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: space-between; transition: opacity 0.3s; }
+        #total { font-weight: bold; white-space: nowrap; }
+        #order-summary { font-size: 0.8em; opacity: 0.9; overflow-x: auto; white-space: nowrap; flex-grow: 1; margin: 0 10px; }
+        #copy-button { padding: 8px 16px; background: #fff; color: #27ae60; border: none; border-radius: 6px; cursor: pointer; transition: background 0.3s; white-space: nowrap; font-weight: bold; }
+        #copy-button:hover { background: #e9ecef; }
+        #popup { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #fff; padding: 12px 20px; border-radius: 8px; display: none; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 1001; }
+        button.reset { padding: 10px 20px; background: #e74c3c; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: background 0.3s; margin: 20px auto; display: block; }
+        button.reset:hover { background: #c0392b; }
+        @media (max-width: 600px) {
+            .item { flex-direction: column; align-items: flex-start; }
+            input[type="number"] { margin-left: 0; margin-top: 10px; width: 100%; }
+            #total-bar { flex-direction: column; align-items: center; gap: 10px; padding: 10px; }
+            #total { font-size: 1.2em; }
+            #order-summary { font-size: 0.7em; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Gestione Ordini</h1>
+    
+    <div class="section">
+        <h2>Articoli Singoli</h2>
+        <div class="item"><label>🍟 Patatine Fritte — 5€</label><input type="number" min="0" value="0" data-price="5" data-name="Patatine Fritte" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🌭 Hot Dog — 5€</label><input type="number" min="0" value="0" data-price="5" data-name="Hot Dog" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🐔 Kebab di Pollo — 12€</label><input type="number" min="0" value="0" data-price="12" data-name="Kebab di Pollo" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🐑 Kebab di Agnello — 12€</label><input type="number" min="0" value="0" data-price="12" data-name="Kebab di Agnello" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍖 Kebab Misto — 15€</label><input type="number" min="0" value="0" data-price="15" data-name="Kebab Misto" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍗 Pollo Cotto — 12€</label><input type="number" min="0" value="0" data-price="12" data-name="Pollo Cotto" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍗🔥 Pollo Fritto — 5€</label><input type="number" min="0" value="0" data-price="5" data-name="Pollo Fritto" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🌮 Tacos — 10€</label><input type="number" min="0" value="0" data-price="10" data-name="Tacos" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍔🍔 Hamburger Doppio — 7€</label><input type="number" min="0" value="0" data-price="7" data-name="Hamburger Doppio" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍔 Hamburger Piccolo — 5€</label><input type="number" min="0" value="0" data-price="5" data-name="Hamburger Piccolo" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🥖 Baguette — 3€</label><input type="number" min="0" value="0" data-price="3" data-name="Baguette" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍩 Churros — 5€</label><input type="number" min="0" value="0" data-price="5" data-name="Churros" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍕 Pizza Margherita — 8€</label><input type="number" min="0" value="0" data-price="8" data-name="Pizza Margherita" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍕🍟 Pizza con Patatine — 10€</label><input type="number" min="0" value="0" data-price="10" data-name="Pizza con Patatine" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍕🧀 Pizza ai Quattro Formaggi — 10€</label><input type="number" min="0" value="0" data-price="10" data-name="Pizza ai Quattro Formaggi" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍕🌭 Pizza Viennese — 10€</label><input type="number" min="0" value="0" data-price="10" data-name="Pizza Viennese" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>💧 Acqua — 0,50€</label><input type="number" min="0" value="0" data-price="0.5" data-name="Acqua" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🥤 Coca Cola — 4€</label><input type="number" min="0" value="0" data-price="4" data-name="Coca Cola" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍊🥤 Fanta — 4€</label><input type="number" min="0" value="0" data-price="4" data-name="Fanta" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🧃 Succo — 4€</label><input type="number" min="0" value="0" data-price="4" data-name="Succo" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍺 Birra — 3€</label><input type="number" min="0" value="0" data-price="3" data-name="Birra" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🍷 Vino — 3€</label><input type="number" min="0" value="0" data-price="3" data-name="Vino" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>☕️ Tazza di caffè — 1€</label><input type="number" min="0" value="0" data-price="1" data-name="Tazza di caffè" oninput="calcTotal()" onfocus="this.select()"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Menù Predefiniti e Stagionali</h2>
+        <div class="item"><label>💧 Menù Acqua 💧 (64 Acqua) — 30€</label><input type="number" min="0" value="0" data-price="30" data-name="Menù Acqua" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🇫🇷 Menù Francia 🇫🇷 (32 Baguette + 32 Vino) — 180€</label><input type="number" min="0" value="0" data-price="180" data-name="Menù Francia" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🎊 Menù Party 🎊 (32 Patatine + 32 Fanta) — 270€</label><input type="number" min="0" value="0" data-price="270" data-name="Menù Party" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🕌 Menù Habibi 🕌 (16 Kebab + 16 Birre) — 230€</label><input type="number" min="0" value="0" data-price="230" data-name="Menù Habibi" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🧃 Menù Merenda 🧃 (16 Hamburger Piccoli + 32 Succhi) — 200€</label><input type="number" min="0" value="0" data-price="200" data-name="Menù Merenda" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🥓 Menù Fritto 🥓 (16 Pollo Fritto + 32 Fanta) — 200€</label><input type="number" min="0" value="0" data-price="200" data-name="Menù Fritto" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🇺🇸 Menù USA 🇺🇸 (32 Hot Dog + 32 Coca Cola) — 275€</label><input type="number" min="0" value="0" data-price="275" data-name="Menù USA" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>👑 Menù Deluxe 👑 (16 Pollo Cotto + 16 Vino) — 230€</label><input type="number" min="0" value="0" data-price="230" data-name="Menù Deluxe" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>💪🍔 Menù Boss 💪🍔 (16 Hamburger Doppio + 16 Fanta) — 165€</label><input type="number" min="0" value="0" data-price="165" data-name="Menù Boss" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🚦👑 Menù StreetKing 🚦👑 (16 Tacos + 16 Coca Cola) — 210€</label><input type="number" min="0" value="0" data-price="210" data-name="Menù StreetKing" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🌙 Menù Orientale 🌙 (16 Kebab Misto + 16 Vino) — 240€</label><input type="number" min="0" value="0" data-price="240" data-name="Menù Orientale" oninput="calcTotal()" onfocus="this.select()"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Fidelity Card</h2>
+        <div class="item"><label>🪙 2.5% Iniziale — 500€</label><input type="number" min="0" value="0" data-price="500" data-type="fidelity" data-name="2.5% Iniziale" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🪙 5% Iniziale — 1000€</label><input type="number" min="0" value="0" data-price="1000" data-type="fidelity" data-name="5% Iniziale" oninput="calcTotal()" onfocus="this.select()"></div>
+        <div class="item"><label>🪙 10% Iniziale — 1500€</label><input type="number" min="0" value="0" data-price="1500" data-type="fidelity" data-name="10% Iniziale" oninput="calcTotal()" onfocus="this.select()"></div>
+        <h3>Rinnovo (massimo uno)</h3>
+        <div class="item"><label><input type="radio" name="renewal" value="0" checked onchange="calcTotal()"> Nessuno</label></div>
+        <div class="item"><label><input type="radio" name="renewal" value="250" data-name="Rinnovo 2.5%" onchange="calcTotal()"> 🪙 Rinnovo 2.5% — 250€</label></div>
+        <div class="item"><label><input type="radio" name="renewal" value="500" data-name="Rinnovo 5%" onchange="calcTotal()"> 🪙 Rinnovo 5% — 500€</label></div>
+        <div class="item"><label><input type="radio" name="renewal" value="750" data-name="Rinnovo 10%" onchange="calcTotal()"> 🪙 Rinnovo 10% — 750€</label></div>
+    </div>
+    
+    <div class="section">
+        <h2>Opzioni</h2>
+        <div class="item">
+            <label>Livello Sconto Fidelity:</label>
+            <select id="discount" oninput="calcTotal()">
+                <option value="0">Nessuno</option>
+                <option value="2.5">2.5%</option>
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+            </select>
+        </div>
+    </div>
+    
+    <button class="reset" onclick="resetAll()">Reset</button>
+    
+    <div id="total-bar">
+        <button id="copy-button" onclick="copySummary()">Copia Riassunto</button>
+        <div id="order-summary"></div>
+        <div id="total">Totale: 0€</div>
+    </div>
+    <div id="popup">Riassunto copiato!</div>
+    
+    <script>
+        let summaryText = '';
+        function calcTotal() {
+            let foodTotal = 0;
+            let fidelityTotal = 0;
+            let summaryItems = [];
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                const qty = parseFloat(input.value) || 0;
+                const price = parseFloat(input.dataset.price) || 0;
+                if (qty > 0) {
+                    summaryItems.push(`${qty}x ${input.dataset.name}`);
+                }
+                if (input.dataset.type === 'fidelity') {
+                    fidelityTotal += qty * price;
+                } else {
+                    foodTotal += qty * price;
+                }
+            });
+            const renewalRadio = document.querySelector('input[name="renewal"]:checked');
+            const renewalPrice = parseFloat(renewalRadio.value) || 0;
+            const renewalName = renewalRadio.dataset.name;
+            if (renewalPrice > 0) {
+                fidelityTotal += renewalPrice;
+                summaryItems.push(`1x ${renewalName}`);
+            }
+            const discount = parseFloat(document.getElementById('discount').value) / 100;
+            let finalTotal = Math.round(foodTotal * (1 - discount) + fidelityTotal);
+            summaryText = summaryItems.join(' ');
+            if (discount > 0) {
+                summaryText = 'F.C. ' + summaryText;
+            }
+            document.getElementById('total').textContent = `Totale: ${finalTotal}€`;
+            document.getElementById('order-summary').textContent = summaryText;
+            document.getElementById('total-bar').style.display = finalTotal > 0 ? 'flex' : 'none';
+        }
+        
+        function copySummary() {
+            navigator.clipboard.writeText(summaryText);
+            const popup = document.getElementById('popup');
+            popup.style.display = 'block';
+            setTimeout(() => { popup.style.display = 'none'; }, 1000);
+        }
+        
+        function resetAll() {
+            document.querySelectorAll('input[type="number"]').forEach(input => input.value = 0);
+            document.getElementById('discount').value = 0;
+            document.querySelector('input[name="renewal"][value="0"]').checked = true;
+            calcTotal();
+        }
+    </script>
+</body>
+</html>
